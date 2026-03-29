@@ -26,7 +26,6 @@ server_scripts {
     'server/sv_function.lua',
     'server/sv_player.lua',
     'server/sv_commands.lua',
-    'server/sv_admincommands.lua',
     'exports/function.lua'
 }
 

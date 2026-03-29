@@ -87,43 +87,9 @@ function Sun.Callbacks:TriggerClient(Source, Name, Callback, ...)
     })
 end
 
-Sun.Callbacks:Register("Sun:RemoveItem", function(source, callback, item, count)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:removeItem(item, count)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not item or not count or count <= 0 or count > 1000 then
-        print("[Sun] Security System - a tentative of remove item is invalid - by : " .. source .. "the item is : " .. tostring(item) .. " the count is : " .. tostring(count))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:AddItem", function(source, callback, item, count)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:addItem(item, count)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not item or not count or count <= 0 or count > 1000 then
-        print("[Sun] Security System - a tentative of add item is invalid - by : " .. source .. "the item is : " .. tostring(item) .. " the count is : " .. tostring(count))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
 Sun.Callbacks:Register("Sun:GetInventoryWeight", function(source, callback)
     local player = Sun.GetPlayer(source)
-    
+
     if not player then
         callback({weight = 0})
         return
@@ -184,108 +150,6 @@ Sun.Callbacks:Register("Sun:CanCarry", function(source, callback, item, count)
 end)
 
 -- Money
-Sun.Callbacks:Register("Sun:AddAccountCash", function(source, callback, amount)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:addMoney("Cash", amount)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not amount or amount <= 0 or amount > 100000 then
-        print("[Sun] Security System - a tentative of give cash money is invalid - by : " .. source .. "the amount is : " .. tostring(amount))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:AddAccountBank", function(source, callback, amount)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:addMoney("Bank", amount)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not amount or amount <= 0 or amount > 100000 then
-        print("[Sun] Security System - a tentative of give bank money is invalid - by : " .. source .. "the amount is : " .. tostring(amount))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:AddAccountDirty", function(source, callback, amount)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:addMoney("Black", amount)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not amount or amount <= 0 or amount > 100000 then
-        print("[Sun] Security System - a tentative of give dirty money is invalid - by : " .. source .. "the amount is : " .. tostring(amount))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:RemoveAccountCash", function(source, callback, amount)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:removeMoney("Cash", amount)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not amount or amount <= 0 or amount > 100000 then
-        print("[Sun] Security System - a tentative of remove cash money is invalid - by : " .. source .. "the amount is : " .. tostring(amount))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:RemoveAccountBank", function(source, callback, amount)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:removeMoney("Bank", amount)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not amount or amount <= 0 or amount > 100000 then
-        print("[Sun] Security System - a tentative of remove bank money is invalid - by : " .. source .. "the amount is : " .. tostring(amount))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:RemoveAccountDirty", function(source, callback, amount)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:removeMoney("Black", amount)
-
-    if not player then
-        callback({success = false})
-        return
-    end
-
-    if not amount or amount <= 0 or amount > 100000 then
-        print("[Sun] Security System - a tentative of remove dirty money is invalid - by : " .. source .. "the amount is : " .. tostring(amount))
-        callback({success = false})
-    end
-
-    callback({success = success})
-end)
-
 Sun.Callbacks:Register("Sun:GetAccountBank", function(source, callback)
     local player = Sun.GetPlayer(source)
     local bank = player and player:getMoney("Bank") or 0
@@ -305,34 +169,6 @@ Sun.Callbacks:Register("Sun:GetAccountDirty", function(source, callback)
     local dirty = player and player:getMoney("Black") or 0
 
     callback({dirty = dirty})
-end)
-
--- Lifecycle Events
-RegisterNetEvent("Sun:PlayerLoaded", function()
-    local playerId = source
-
-    if type(playerId) ~= "number" or playerId < 1 then
-        return
-    end
-
-    if Sun.Players[playerId] then
-        return
-    end
-
-    if not Sun.PlayerData[playerId] then
-        Sun.PlayerData[playerId] = {}
-    end
-
-    Sun.PlayerData[playerId].money = Sun.PlayerData[playerId].money or {
-        cash = Sun.Config.Money.Default_Money_Liquid,
-        bank = Sun.Config.Money.Default_Money_Bank,
-        dirty = Sun.Config.Money.Default_Money_Black
-    }
-
-    TriggerEvent("Sun:OnPlayerLoaded", playerId)
-    TriggerClientEvent("Sun:Client:OnPlayerLoaded", playerId)
-
-    print("[Sun] Player " .. playerId .. "load")
 end)
 
 AddEventHandler("playerDropped", function(reason)
@@ -372,20 +208,6 @@ function Sun.SetPlayerGroup(source, group)
 
     return true
 end
-
-Sun.Callbacks:Register("Sun:SetJob", function(source, callback, job)
-    local player = Sun.GetPlayer(source)
-    local success = player and player:setJob(job.name, job.grade)
-
-    callback({success = success})
-end)
-
-Sun.Callbacks:Register("Sun:SetGroup", function(source, callback, group)
-    local player = Sun.GetPlayer(source)
-    local success = Sun:SetGroup(source, group)
-
-    callback({success = success})
-end)
 
 RegisterNetEvent("Sun:Callback:ServerResponse", function(Request_Callback_Id, Result)
     local Source = source

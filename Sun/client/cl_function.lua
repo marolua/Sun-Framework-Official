@@ -18,27 +18,6 @@ function Sun:RegisterCallBack(Name, result)
 end
 
 -- Inventory
-
-function Sun.RemoveItem(item, count)
-    if not item or not count or count <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:RemoveItem", function(result)
-        return result and result.success or false
-    end, item, count)
-end
-
-function Sun.AddItem(item, count)
-    if not item or not count or count <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:AddItem", function(result)
-        return result and result.success or false
-    end, item, count)
-end
-
 function Sun.GetInventoryWeight()
     Sun:TriggerCallBack("Sun:GetInventoryWeight", function(result)
         return result and result.weight or 0
@@ -62,66 +41,6 @@ function Sun.CanCarry(item, count)
 end
 
 -- Money
-
-function Sun.AddAccountCash(amount)
-    if not amount or amount <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:AddAccountCash", function(result)
-        return result and result.success or false
-    end, amount)
-end
-
-function Sun.AddAccountBank(amount)
-    if not amount or amount <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:AddAccountBank", function(result)
-        return result and result.success or false
-    end, amount)
-end
-
-function Sun.AddAccountDirty(amount)
-    if not amount or amount <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:AddAccountDirty", function(result)
-        return result and result.success or false
-    end, amount)
-end
-
-function Sun.RemoveAccountCash(amount)
-    if not amount or amount <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:RemoveAccountCash", function(result)
-        return result and result.success or false
-    end, amount)
-end
-
-function Sun.RemoveAccountBank(amount)
-    if not amount or amount <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:RemoveAccountBank", function(result)
-        return result and result.success or false
-    end, amount)
-end
-
-function Sun.RemoveAccountDirty(amount)
-    if not amount or amount <= 0 then
-        return false
-    end
-
-    Sun:TriggerCallBack("Sun:RemoveAccountDirty", function(result)
-        return result and result.success or false
-    end, amount)
-end
 
 function Sun.GetAccountCash()
     Sun:TriggerCallBack("Sun:GetAccountCash", function(result)
@@ -173,7 +92,16 @@ RegisterNetEvent("Sun:Callback:Request", function(data)
     local name = data.name
     local callbackId = data.RequestCallbackId
     local handler = svCallback[name]
-    local sending = function()
+
+    local sending = function(res)
+        TriggerServerEvent("Sun:Callback:ServerResponse", callbackId, res)
+    end
+
+    if type(handler) == "function" then
+        handler(sending, table.unpack(data.args or {}))
+    else
+        sending(nil)
+    end
 end)
 
 function Sun.UpdatedPlayerJob(job)
