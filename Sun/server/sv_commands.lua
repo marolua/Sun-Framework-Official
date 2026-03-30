@@ -3,13 +3,13 @@ local function isAdmin(source)
         return true
     end
 
-    local group = Sun:GetGroup(source)
+    local group = Sun:getGroup(source)
 
     if not group then
         return false
     end
 
-    return Sun.Config.Groups_Admin_BDD[group] == true
+    return Sun.Config.adminGroups[group] == true
 end
 
 RegisterCommand("givemoney", function(source, args)
@@ -27,14 +27,14 @@ RegisterCommand("givemoney", function(source, args)
         return
     end
 
-    local validMoney = { Cash = true, Bank = true, Black = true}
+    local validMoney = { cash = true, bank = true, black = true }
 
     if not validMoney[moneyType] then
         print("[Sun] The money type informed is not valid")
         return
     end
 
-    local player = Sun.GetPlayer(targetId)
+    local player = Sun:getPlayer(targetId)
 
     if not player then
         print("[Sun] The player could has been not found")

@@ -28,7 +28,3 @@ server_scripts {
     'server/sv_commands.lua',
     'exports/function.lua'
 }
-
-files {
-    'exports/imports.lua'
-}

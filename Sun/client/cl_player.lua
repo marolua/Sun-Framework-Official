@@ -1,23 +1,23 @@
-Sun.PlayerData = {
-    Identifier = nil,
-    Name = nil,
-
-    Money = {
-        Cash = 0,
-        Bank = 0,
-        Black = 0,
+Sun.playerData = {
+    identifier = nil,
+    name = nil,
+    group = "user",
+    money = {
+        cash = 0,
+        bank = 0,
+        black = 0,
     },
-    Job = {
-        Legal = {
+    job = {
+        legal = {
             name = "unemployed",
             grade = 0,
         },
-        Illegal = {
+        illegal = {
             name = nil,
             grade = 0,
         },
     },
-    Meta = {},
+    meta = {},
 }
 
 Sun.Permissions = Sun.Permissions or {
@@ -51,35 +51,36 @@ RegisterNetEvent("Sun:PlayerData:Load", function(data)
         return
     end
 
-    Sun.PlayerData.Identifier = data.Identifier or nil
-    Sun.PlayerData.Name       = data.Name or nil
+    Sun.playerData.identifier = data.identifier or nil
+    Sun.playerData.name = data.name or nil
+    Sun.playerData.group = type(data.group) == "string" and data.group or "user"
 
-    if type(data.Money) == "table" then
-        Sun.PlayerData.Money.Cash  = tonumber(data.Money.Cash)  or 0
-        Sun.PlayerData.Money.Bank  = tonumber(data.Money.Bank)  or 0
-        Sun.PlayerData.Money.Black = tonumber(data.Money.Black) or 0
+    if type(data.money) == "table" then
+        Sun.playerData.money.cash = tonumber(data.money.cash) or 0
+        Sun.playerData.money.bank = tonumber(data.money.bank) or 0
+        Sun.playerData.money.black = tonumber(data.money.black) or 0
     end
 
-    if type(data.Job) == "table" then
-        if type(data.Job.Legal) == "table" then
-            Sun.PlayerData.Job.Legal.name  = data.Job.Legal.name or "unemployed"
-            Sun.PlayerData.Job.Legal.grade = data.Job.Legal.grade or 0
+    if type(data.job) == "table" then
+        if type(data.job.legal) == "table" then
+            Sun.playerData.job.legal.name = data.job.legal.name or "unemployed"
+            Sun.playerData.job.legal.grade = data.job.legal.grade or 0
         end
-        if type(data.Job.Illegal) == "table" then
-            Sun.PlayerData.Job.Illegal.name  = data.Job.Illegal.name or nil
-            Sun.PlayerData.Job.Illegal.grade = data.Job.Illegal.grade or 0
+        if type(data.job.illegal) == "table" then
+            Sun.playerData.job.illegal.name = data.job.illegal.name or nil
+            Sun.playerData.job.illegal.grade = data.job.illegal.grade or 0
         end
     end
 
-    if type(data.Meta) == "table" then
-        for k, v in pairs(data.Meta) do
-            Sun.PlayerData.Meta[k] = v
+    if type(data.meta) == "table" then
+        for k, v in pairs(data.meta) do
+            Sun.playerData.meta[k] = v
         end
     end
 
     TriggerServerEvent("Sun:Perms:Request")
 
-    TriggerEvent("Sun:OnPlayerDataUpdated", "All", Sun.PlayerData)
+    TriggerEvent("Sun:OnPlayerDataUpdated", "All", Sun.playerData)
 end)
 
 RegisterNetEvent("Sun:PlayerData:Update", function(key, value)
@@ -87,33 +88,36 @@ RegisterNetEvent("Sun:PlayerData:Update", function(key, value)
         return
     end
 
-    if key == "Money" and type(value) == "table" then
-        Sun.PlayerData.Money.Cash = tonumber(value.Cash) or 0
-        Sun.PlayerData.Money.Bank = tonumber(value.Bank) or 0
-        Sun.PlayerData.Money.Black = tonumber(value.Black) or 0
-    elseif key == "Job" and type(value) == "table" then
-        if type(value.Legal) == "table" or type(value.Illegal) == "table" then
-            if type(value.Legal) == "table" then
-                Sun.PlayerData.Job.Legal.name = value.Legal.name or "unemployed"
-                Sun.PlayerData.Job.Legal.grade = value.Legal.grade or 0
+    if key == "group" and type(value) == "string" then
+        Sun.playerData.group = value
+        Sun.Permissions.group = value
+    elseif key == "money" and type(value) == "table" then
+        Sun.playerData.money.cash = tonumber(value.cash) or 0
+        Sun.playerData.money.bank = tonumber(value.bank) or 0
+        Sun.playerData.money.black = tonumber(value.black) or 0
+    elseif key == "job" and type(value) == "table" then
+        if type(value.legal) == "table" or type(value.illegal) == "table" then
+            if type(value.legal) == "table" then
+                Sun.playerData.job.legal.name = value.legal.name or "unemployed"
+                Sun.playerData.job.legal.grade = value.legal.grade or 0
             end
-            if type(value.Illegal) == "table" then
-                Sun.PlayerData.Job.Illegal.name = value.Illegal.name or nil
-                Sun.PlayerData.Job.Illegal.grade = value.Illegal.grade or 0
+            if type(value.illegal) == "table" then
+                Sun.playerData.job.illegal.name = value.illegal.name or nil
+                Sun.playerData.job.illegal.grade = value.illegal.grade or 0
             end
         else
             local jobType = value.type or "legal"
             if jobType == "legal" then
-                Sun.PlayerData.Job.Legal.name = value.name or "unemployed"
-                Sun.PlayerData.Job.Legal.grade = value.grade or 0
+                Sun.playerData.job.legal.name = value.name or "unemployed"
+                Sun.playerData.job.legal.grade = value.grade or 0
             elseif jobType == "illegal" then
-                Sun.PlayerData.Job.Illegal.name = value.name or nil
-                Sun.PlayerData.Job.Illegal.grade = value.grade or 0
+                Sun.playerData.job.illegal.name = value.name or nil
+                Sun.playerData.job.illegal.grade = value.grade or 0
             end
         end
-    elseif key == "Meta" and type(value) == "table" then
+    elseif key == "meta" and type(value) == "table" then
         for k, v in pairs(value) do
-            Sun.PlayerData.Meta[k] = v
+            Sun.playerData.meta[k] = v
         end
     end
 
@@ -121,5 +125,5 @@ RegisterNetEvent("Sun:PlayerData:Update", function(key, value)
 end)
 
 exports("GetPlayerData", function()
-    return Sun.PlayerData
+    return Sun.playerData
 end)

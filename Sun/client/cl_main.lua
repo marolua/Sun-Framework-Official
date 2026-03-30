@@ -10,38 +10,37 @@ local function getIdentifier()
     return (type(playerId) == "string" and playerId ~= "") and playerId or nil
 end
 
-function Sun:Connexion()
+function Sun:connexion()
     if not getIdentifier() then
         TriggerServerEvent("Sun:CallBack:Connexion")
     end
 end
 
-function Sun:ReloadRequest()
+function Sun:reloadRequest()
     TriggerServerEvent("Sun:ReloadRequest")
 end
 
-function Sun:Reconnecting()
+function Sun:reconnecting()
     CreateThread(function()
-        Wait(1200)
-        for i = 1, 5 do
-            self:Connexion()
-            Wait(700)
-            self:ReloadRequest()
-            Wait(800)
+        Wait(1000)
+        for attempt = 1, 5 do
+            self:connexion()
+            Wait(500)
+            self:reloadRequest()
+            Wait(500 * attempt) -- backoff: 500ms, 1s, 1.5s, 2s, 2.5s
             if getIdentifier() then
-                break
+                return
             end
-            Wait(400)
         end
     end)
 end
 
-function Sun:Initialize()
+function Sun:initialize()
     CreateThread(function()
         while not NetworkIsSessionStarted() do Wait(100) end
         Wait(3000)
         if getIdentifier() then
-            self:Connexion()
+            self:connexion()
         else
             TriggerServerEvent("Sun:CallBack:Connexion")
         end
@@ -50,9 +49,9 @@ function Sun:Initialize()
     RegisterNetEvent("Sun:RestartingServer", function()
         CreateThread(function()
             Wait(150)
-            self:Connexion()
+            self:connexion()
             Wait(500)
-            self:ReloadRequest()
+            self:reloadRequest()
         end)
     end)
 
@@ -60,7 +59,7 @@ function Sun:Initialize()
         if resourceName ~= GetCurrentResourceName() then
             return
         end
-        self:Reconnecting()
+        self:reconnecting()
     end)
 end
 
@@ -68,4 +67,4 @@ exports("getSharedObject", function()
     return Sun
 end)
 
-Sun:Initialize()
+Sun:initialize()

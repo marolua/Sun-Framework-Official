@@ -12,7 +12,7 @@ local function registerPlayerIdentifiers(source)
     end
 end
 
-function Sun:GetIdentifier(source)
+function Sun:getIdentifier(source)
     if type(source) ~= "number" or source < 1 then
         return nil
     end
@@ -34,7 +34,7 @@ function Sun:GetIdentifier(source)
     return nil
 end
 
-function Sun:GetSourceFromIdentifier(identifier)
+function Sun:getSourceFromIdentifier(identifier)
     if type(identifier) ~= "string" or identifier == "" then
         return nil
     end
@@ -54,8 +54,19 @@ AddEventHandler("Sun:LoadingCharacter", function(source)
     end
 end)
 
+RegisterNetEvent("Sun:CallBack:Connexion", function()
+    local src = source
+    if type(src) ~= "number" or src < 1 then return end
+    if Sun.Players and Sun.Players[src] then return end
+
+    local identifier = Sun:getIdentifier(src)
+    if not identifier then return end
+
+    TriggerEvent("Sun:LoadingCharacter", src)
+end)
+
 AddEventHandler("playerDropped", function()
-    local src        = source
+    local src = source
     local identifier = listPlayers[src]
 
     if identifier then

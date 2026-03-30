@@ -1,10 +1,10 @@
 local function isAdmin()
     local group = Sun.Permissions and Sun.Permissions.group or "user"
 
-    return Sun.Config.Groups_Admin_BDD[group] == true
+    return Sun.Config.adminGroups[group] == true
 end
 
-function Sun:Initialize_Commands()
+function Sun:initializeCommands()
     RegisterCommand("car", function(k, args)
         local model = args and args[1] and tostring(args[1]):lower() or ""
 
@@ -89,4 +89,4 @@ RegisterNetEvent("Sun:SpawnVehicle:Response", function(model)
     end)
 end)
 
-Sun:Initialize_Commands()
+Sun:initializeCommands()
