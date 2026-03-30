@@ -1,66 +1,66 @@
-local List_Players = {}
-local List_Player_Identifier = {}
+local listPlayers = {}
+local listPlayerIdentifier = {}
 
-local function RegisterPlayerIdentifiers(Source)
-    local Ok, Identifier = pcall(function()
-        return Player(Source).state.Sun_identifier
+local function registerPlayerIdentifiers(source)
+    local ok, identifier = pcall(function()
+        return Player(source).state.Sun_identifier
     end)
 
-    if Ok and type(Identifier) == "string" and Identifier ~= "" then
-        List_Players[Source] = Identifier
-        List_Player_Identifier[Identifier] = Source
+    if ok and type(identifier) == "string" and identifier ~= "" then
+        listPlayers[source] = identifier
+        listPlayerIdentifier[identifier] = source
     end
 end
 
-function Sun:GetIdentifier(Source)
-    if type(Source) ~= "number" or Source < 1 then
+function Sun:GetIdentifier(source)
+    if type(source) ~= "number" or source < 1 then
         return nil
     end
 
-    if List_Players[Source] then
-        return List_Players[Source]
+    if listPlayers[source] then
+        return listPlayers[source]
     end
 
-    local Ok, Identifier = pcall(function()
-        return Player(Source).state.Sun_identifier
+    local ok, identifier = pcall(function()
+        return Player(source).state.Sun_identifier
     end)
 
-    if Ok and type(Identifier) == "string" and Identifier ~= "" then
-        List_Players[Source] = Identifier
-        List_Player_Identifier[Identifier] = Source
-        return Identifier
+    if ok and type(identifier) == "string" and identifier ~= "" then
+        listPlayers[source] = identifier
+        listPlayerIdentifier[identifier] = source
+        return identifier
     end
 
     return nil
 end
 
-function Sun:GetSourceFromIdentifier(Identifier)
-    if type(Identifier) ~= "string" or Identifier == "" then
+function Sun:GetSourceFromIdentifier(identifier)
+    if type(identifier) ~= "string" or identifier == "" then
         return nil
     end
 
-    local Source = List_Player_Identifier[Identifier]
+    local src = listPlayerIdentifier[identifier]
 
-    if type(Source) == "number" and Source > 0 then
-        return Source
+    if type(src) == "number" and src > 0 then
+        return src
     end
 
     return nil
 end
 
-AddEventHandler("Sun:LoadingCharacter", function(Source)
-    if type(Source) == "number" and Source > 0 then
-        RegisterPlayerIdentifiers(Source)
+AddEventHandler("Sun:LoadingCharacter", function(source)
+    if type(source) == "number" and source > 0 then
+        registerPlayerIdentifiers(source)
     end
 end)
 
 AddEventHandler("playerDropped", function()
-    local Source = source
-    local Identifier = List_Players[Source]
+    local src        = source
+    local identifier = listPlayers[src]
 
-    if Identifier then
-        List_Player_Identifier[Identifier] = nil
+    if identifier then
+        listPlayerIdentifier[identifier] = nil
     end
 
-    List_Players[Source] = nil
+    listPlayers[src] = nil
 end)

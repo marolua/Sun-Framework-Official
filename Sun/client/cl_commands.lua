@@ -1,4 +1,4 @@
-local function IsAdmin()
+local function isAdmin()
     local group = Sun.Permissions and Sun.Permissions.group or "user"
 
     return Sun.Config.Groups_Admin_BDD[group] == true
@@ -16,7 +16,7 @@ function Sun:Initialize_Commands()
     end, false)
 
     RegisterCommand("tp", function(k, args)
-        if not IsAdmin() then
+        if not isAdmin() then
             return
         end
 
@@ -34,7 +34,7 @@ function Sun:Initialize_Commands()
     end, false)
 
     RegisterCommand("dv", function(k, args)
-        if not IsAdmin() then
+        if not isAdmin() then
             return
         end
 

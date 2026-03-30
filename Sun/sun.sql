@@ -61,6 +61,19 @@ CREATE TABLE `job_grades` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table `owned_vehicle`
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `owned_vehicle` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `identifier` VARCHAR(60) NOT NULL,
+    `plate` VARCHAR(10) NOT NULL UNIQUE,
+    `model` VARCHAR(64) NOT NULL,
+    `stored` TINYINT(1) DEFAULT 1,
+    INDEX `idx_identifier` (`identifier`)
+);
+
+-- --------------------------------------------------------
 -- Index
 -- --------------------------------------------------------
 

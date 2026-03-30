@@ -29,15 +29,6 @@ server_scripts {
     'exports/function.lua'
 }
 
-client_exports {
-    'getSharedObject'
-}
-
-server_exports {
-    'getSharedObject',
-    'GetPlayerIdentifier'
-}
-
 files {
     'exports/imports.lua'
 }

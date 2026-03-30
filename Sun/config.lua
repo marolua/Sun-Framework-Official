@@ -1,9 +1,5 @@
 Sun = Sun or {}
 
-exports("getSharedObject", function()
-    return Sun
-end)
-
 Sun.PlayerData = Sun.PlayerData or {}
 Sun.Config = {}
 

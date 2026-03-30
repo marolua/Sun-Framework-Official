@@ -1,17 +1,17 @@
-local function GetIdentifier()
+local function getIdentifier()
     local player = Player(PlayerId()).state
 
-    if not player then 
-        return nil 
+    if not player then
+        return nil
     end
 
     local playerId = player.Sun_identifier
-    
+
     return (type(playerId) == "string" and playerId ~= "") and playerId or nil
 end
 
 function Sun:Connexion()
-    if not GetIdentifier() then
+    if not getIdentifier() then
         TriggerServerEvent("Sun:CallBack:Connexion")
     end
 end
@@ -23,12 +23,12 @@ end
 function Sun:Reconnecting()
     CreateThread(function()
         Wait(1200)
-        for i=1, 5 do
+        for i = 1, 5 do
             self:Connexion()
             Wait(700)
             self:ReloadRequest()
             Wait(800)
-            if GetIdentifier() then
+            if getIdentifier() then
                 break
             end
             Wait(400)
@@ -40,7 +40,7 @@ function Sun:Initialize()
     CreateThread(function()
         while not NetworkIsSessionStarted() do Wait(100) end
         Wait(3000)
-        if GetIdentifier() then
+        if getIdentifier() then
             self:Connexion()
         else
             TriggerServerEvent("Sun:CallBack:Connexion")
@@ -57,8 +57,8 @@ function Sun:Initialize()
     end)
 
     AddEventHandler("onResourceStart", function(resourceName)
-        if resourceName ~= GetCurrentResourceName() then 
-            return 
+        if resourceName ~= GetCurrentResourceName() then
+            return
         end
         self:Reconnecting()
     end)

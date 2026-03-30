@@ -46,33 +46,33 @@ exports("GetPermissions", function()
     return Sun.Permissions
 end)
 
-RegisterNetEvent("Sun:PlayerData:Load", function(Data)
-    if type(Data) ~= "table" then
+RegisterNetEvent("Sun:PlayerData:Load", function(data)
+    if type(data) ~= "table" then
         return
     end
 
-    Sun.PlayerData.Identifier = Data.Identifier or nil
-    Sun.PlayerData.Name = Data.Name or nil
+    Sun.PlayerData.Identifier = data.Identifier or nil
+    Sun.PlayerData.Name       = data.Name or nil
 
-    if type(Data.Money) == "table" then
-        Sun.PlayerData.Money.Cash = tonumber(Data.Money.Cash) or 0
-        Sun.PlayerData.Money.Bank = tonumber(Data.Money.Bank) or 0
-        Sun.PlayerData.Money.Black = tonumber(Data.Money.Black) or 0
+    if type(data.Money) == "table" then
+        Sun.PlayerData.Money.Cash  = tonumber(data.Money.Cash)  or 0
+        Sun.PlayerData.Money.Bank  = tonumber(data.Money.Bank)  or 0
+        Sun.PlayerData.Money.Black = tonumber(data.Money.Black) or 0
     end
 
-    if type(Data.Job) == "table" then
-        if type(Data.Job.Legal) == "table" then
-            Sun.PlayerData.Job.Legal.name = Data.Job.Legal.name or "unemployed"
-            Sun.PlayerData.Job.Legal.grade = Data.Job.Legal.grade or 0
+    if type(data.Job) == "table" then
+        if type(data.Job.Legal) == "table" then
+            Sun.PlayerData.Job.Legal.name  = data.Job.Legal.name or "unemployed"
+            Sun.PlayerData.Job.Legal.grade = data.Job.Legal.grade or 0
         end
-        if type(Data.Job.Illegal) == "table" then
-            Sun.PlayerData.Job.Illegal.name = Data.Job.Illegal.name or nil
-            Sun.PlayerData.Job.Illegal.grade = Data.Job.Illegal.grade or 0
+        if type(data.Job.Illegal) == "table" then
+            Sun.PlayerData.Job.Illegal.name  = data.Job.Illegal.name or nil
+            Sun.PlayerData.Job.Illegal.grade = data.Job.Illegal.grade or 0
         end
     end
 
-    if type(Data.Meta) == "table" then
-        for k, v in pairs(Data.Meta) do
+    if type(data.Meta) == "table" then
+        for k, v in pairs(data.Meta) do
             Sun.PlayerData.Meta[k] = v
         end
     end
