@@ -485,27 +485,39 @@ function PlayerMethods:setIllegalJob(jobName, grade)
 end
 
 function PlayerMethods:getInventory()
-    return Sun_GetPlayerInventory and Sun_GetPlayerInventory(self.identifier) or nil
+    local inventory = Sun.Config.inventory.inventoryResourceName
+    if inventory and GetResourceState(inventory) == "started" then
+        return exports[inventory]:GetInventory(self.source)
+    end
+    return nil
 end
 
 function PlayerMethods:hasItem(itemName, quantity)
-    return Sun_HasItem and Sun_HasItem(self.identifier, itemName, quantity or 1) or false
+    local inventory = Sun.Config.inventory.inventoryResourceName
+    if inventory and GetResourceState(inventory) == "started" then
+        return exports[inventory]:HasItem(self.source, itemName, quantity or 1)
+    end
+    return false
 end
 
 function PlayerMethods:addItem(itemName, quantity)
-    local result = Sun_AddItem and Sun_AddItem(self.identifier, itemName, quantity or 1) or false
+    local inventory = Sun.Config.inventory.inventoryResourceName
+    if not inventory or GetResourceState(inventory) ~= "started" then return false end
+    local result = exports[inventory]:AddItem(self.source, itemName, quantity or 1)
     if result then
         TriggerClientEvent("Sun:Client:RefreshInventory", self.source)
     end
-    return result
+    return result or false
 end
 
 function PlayerMethods:removeItem(itemName, quantity)
-    local result = Sun_RemoveItem and Sun_RemoveItem(self.identifier, itemName, quantity or 1) or false
+    local inventory = Sun.Config.inventory.inventoryResourceName
+    if not inventory or GetResourceState(inventory) ~= "started" then return false end
+    local result = exports[inventory]:RemoveItem(self.source, itemName, quantity or 1)
     if result then
         TriggerClientEvent("Sun:Client:RefreshInventory", self.source)
     end
-    return result
+    return result or false
 end
 
 function PlayerMethods:getVehicles()
@@ -751,7 +763,28 @@ RegisterNetEvent("Sun:ReloadRequest", function()
     Sun.reloadRateLimit = Sun.reloadRateLimit or {}
     Sun.reloadRateLimit[src] = GetGameTimer()
 
-    TriggerEvent("Sun:LoadingCharacter", src)
+    local identifier = player.identifier
+    local moneyData = Sun.Money.Data[identifier] or {}
+    local jobsData = Sun.Jobs.Data[identifier] or {}
+    local legalJob = jobsData.legal or {}
+    local illegalJob = jobsData.illegal or {}
+
+    TriggerClientEvent("Sun:PlayerData:Load", src, {
+        identifier = identifier,
+        name = player.name,
+        group = Sun.GroupData[identifier] or "user",
+        money = {
+            cash = tonumber(moneyData.cash) or 0,
+            bank = tonumber(moneyData.bank) or 0,
+            black = tonumber(moneyData.black) or 0,
+        },
+        job = {
+            legal = Sun.Jobs:buildObject(legalJob.name, legalJob.grade),
+            illegal = Sun.Jobs:buildObject(illegalJob.name, illegalJob.grade),
+        },
+        meta = Sun.PlayerMeta[identifier] or {},
+        loadout = Sun.Weapons.Data[identifier] or {},
+    })
 end)
 
 RegisterNetEvent("Sun:Loadout:Sync", function(weapons)
@@ -760,11 +793,20 @@ RegisterNetEvent("Sun:Loadout:Sync", function(weapons)
     local player = Sun:getPlayer(src)
     if not player then return end
     if type(weapons) ~= "table" or #weapons > 50 then return end
+    local sanitized = {}
+    local count = 0
     for i = 1, #weapons do
         local item = weapons[i]
-        if type(item) ~= "table" or type(item.weapon) ~= "number" then return end
+        if type(item) == "table" and type(item.weapon) == "number" and item.weapon > 0 then
+            local ammo = tonumber(item.ammo) or 0
+            local tint = tonumber(item.tint) or 0
+            if ammo < 0 then ammo = 0 elseif ammo > 9999 then ammo = 9999 end
+            if tint < 0 then tint = 0 elseif tint > 8 then tint = 8 end
+            count = count + 1
+            sanitized[count] = { weapon = item.weapon, ammo = ammo, tint = tint }
+        end
     end
-    Sun.Weapons.Data[player.identifier] = weapons
+    Sun.Weapons.Data[player.identifier] = sanitized
 end)
 
 CreateThread(function()

@@ -203,6 +203,7 @@ AddEventHandler("playerDropped", function(reason)
         TriggerEvent("Sun:OnPlayerDropped", src, reason)
         print("[Sun] The player " .. src .. " disconnected: " .. tostring(reason))
     end
+    if Sun.callbackRateLimit then Sun.callbackRateLimit[src] = nil end
 end)
 
 
@@ -233,12 +234,6 @@ RegisterNetEvent("Sun:Callback:Trigger", function(data)
 
     if type(src) ~= "number" or src < 1 then return end
 
-    if Sun.callbackRateLimit and Sun.callbackRateLimit[src] and (GetGameTimer() - Sun.callbackRateLimit[src]) < 500 then
-        return
-    end
-    Sun.callbackRateLimit = Sun.callbackRateLimit or {}
-    Sun.callbackRateLimit[src] = GetGameTimer()
-
     if type(data) ~= "table" then return end
 
     local name = data.name
@@ -248,6 +243,15 @@ RegisterNetEvent("Sun:Callback:Trigger", function(data)
     if type(name) ~= "string" then return end
     if #name > 50 or not name:match("^[%w_:%-]+$") then return end
     if type(requestCallbackId) ~= "number" then return end
+
+    Sun.callbackRateLimit = Sun.callbackRateLimit or {}
+    if not Sun.callbackRateLimit[src] then Sun.callbackRateLimit[src] = {} end
+    local now = GetGameTimer()
+    if Sun.callbackRateLimit[src][name] and (now - Sun.callbackRateLimit[src][name]) < 500 then
+        return
+    end
+    Sun.callbackRateLimit[src][name] = now
+
     if type(args) ~= "table" then return end
     if #args > 10 then return end
 

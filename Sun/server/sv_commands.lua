@@ -16,7 +16,7 @@ end
 
 RegisterCommand("givemoney", function(source, args)
     if not isAdmin(source) then
-        print("[Sun] Your not have he permission for execute this command")
+        print("[Sun] You don't have permission to execute this command")
         return
     end
 
@@ -39,7 +39,7 @@ RegisterCommand("givemoney", function(source, args)
     local player = Sun:getPlayer(targetId)
 
     if not player then
-        print("[Sun] The player could has been not found")
+        print("[Sun] The player could not be found")
         return
     end
 

@@ -104,23 +104,7 @@ RegisterNetEvent("Sun:PlayerData:Load", function(data)
 end)
 
 local function syncLoadout()
-    local ped = PlayerPedId()
-    local weapons = {}
-    local count = 0
-    local unarmed = GetHashKey("WEAPON_UNARMED")
-    local list = GetCurrentPedWeapon(ped, true) or {}
-    for i = 1, #list do
-        local hash = list[i]
-        if hash ~= unarmed then
-            count = count + 1
-            weapons[count] = {
-                weapon = hash,
-                ammo = GetAmmoInPedWeapon(ped, hash),
-                tint = GetPedWeaponTintIndex(ped, hash),
-            }
-        end
-    end
-    TriggerServerEvent("Sun:Loadout:Sync", weapons)
+    TriggerServerEvent("Sun:Loadout:Sync", Sun.playerData.loadout or {})
 end
 
 local function applyWeapons(weapons)
@@ -140,6 +124,35 @@ local function loadOut(weapons)
     end
     CreateThread(function() applyWeapons(weapons) end)
 end
+
+CreateThread(function()
+    local unarmed = GetHashKey("WEAPON_UNARMED")
+    while true do
+        Wait(5000)
+        if Sun.playerData.identifier then
+            local ped = PlayerPedId()
+            local hash = GetCurrentPedWeapon(ped, true)
+            if hash and hash ~= 0 and hash ~= unarmed then
+                local found = false
+                for i = 1, #Sun.playerData.loadout do
+                    if Sun.playerData.loadout[i].weapon == hash then
+                        Sun.playerData.loadout[i].ammo = GetAmmoInPedWeapon(ped, hash)
+                        Sun.playerData.loadout[i].tint = GetPedWeaponTintIndex(ped, hash)
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    Sun.playerData.loadout[#Sun.playerData.loadout + 1] = {
+                        weapon = hash,
+                        ammo = GetAmmoInPedWeapon(ped, hash),
+                        tint = GetPedWeaponTintIndex(ped, hash),
+                    }
+                end
+            end
+        end
+    end
+end)
 
 CreateThread(function()
     while true do

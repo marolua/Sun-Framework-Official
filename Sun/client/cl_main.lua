@@ -39,11 +39,7 @@ function Sun:initialize()
     CreateThread(function()
         while not NetworkIsSessionStarted() do Wait(100) end
         Wait(3000)
-        if getIdentifier() then
-            self:connexion()
-        else
-            TriggerServerEvent("Sun:CallBack:Connexion")
-        end
+        TriggerServerEvent("Sun:CallBack:Connexion")
     end)
 
     RegisterNetEvent("Sun:RestartingServer", function()
