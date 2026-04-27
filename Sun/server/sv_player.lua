@@ -623,9 +623,10 @@ end
 
 function PlayerMethods:addVehicle(plate, model)
     if type(plate) ~= "string" or plate == "" then return false end
-    if type(model) ~= "string" or model == "" then return false end
+    if type(model) ~= "string" or model == "" or #model > 64 then return false end
 
     plate = string.upper(string.sub(plate, 1, 10))
+    if not plate:match("^[%w%s]+$") then return false end
 
     local ok = pcall(function()
         MySQL.insert.await(
