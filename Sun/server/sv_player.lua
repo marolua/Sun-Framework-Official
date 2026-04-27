@@ -948,30 +948,42 @@ RegisterNetEvent("Sun:Loadout:Sync", function(weapons)
     local player = Sun:getPlayer(src)
     if not player then return end
     if type(weapons) ~= "table" or #weapons > 50 then return end
-    local sanitized = {}
-    local count = 0
+
+    local identifier = player.identifier
     for i = 1, #weapons do
         local item = weapons[i]
-        if type(item) == "table" and type(item.weapon) == "number" and item.weapon > 0 then
-            local ammo = tonumber(item.ammo) or 0
-            local tint = tonumber(item.tint) or 0
-            if ammo < 0 then ammo = 0 elseif ammo > 9999 then ammo = 9999 end
-            if tint < 0 then tint = 0 elseif tint > 8 then tint = 8 end
-            count = count + 1
-            sanitized[count] = { weapon = item.weapon, ammo = ammo, tint = tint }
+        if type(item) == "table" then
+            local hash = tonumber(item.weapon)
+            if hash and hash > 0 and Sun.Weapons:has(identifier, hash) then
+                Sun.Weapons:updateAmmo(identifier, hash, item.ammo)
+                if item.tint ~= nil then
+                    Sun.Weapons:updateTint(identifier, hash, item.tint)
+                end
+            end
         end
     end
-    Sun.Weapons.Data[player.identifier] = sanitized
 end)
 
 CreateThread(function()
     while true do
         Wait(30000)
+        local queries = {}
         for _, player in pairs(Sun.Players) do
-            Wait(0)
             if player then
-                Sun.Money:saveMoney(player.identifier)
+                local data = Sun.Money.Data[player.identifier]
+                if data and data._dirty then
+                    data._dirty = false
+                    queries[#queries + 1] = {
+                        query = 'UPDATE users SET cash = ?, bank = ?, black_money = ? WHERE identifier = ?',
+                        values = { data.cash or 0, data.bank or 0, data.black or 0, player.identifier }
+                    }
+                end
             end
+        end
+        if #queries > 0 then
+            pcall(function()
+                MySQL.transaction(queries, function() end)
+            end)
         end
     end
 end)
