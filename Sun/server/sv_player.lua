@@ -329,9 +329,21 @@ function Sun.Jobs:getJobs(source)
     return Sun.Jobs.Data[player.identifier]
 end
 
+function Sun.Jobs:exists(jobName)
+    if type(jobName) ~= "string" or jobName == "" then return false end
+    if jobName == "unemployed" then return true end
+    return Sun.Jobs.Labels[jobName] ~= nil
+end
+
 function Sun.Jobs:setLegalJob(source, jobName, grade)
     local player = Sun.Players[source]
     if not player then return false end
+
+    jobName = (type(jobName) == "string" and jobName ~= "") and jobName or "unemployed"
+    if not self:exists(jobName) then return false end
+
+    grade = tonumber(grade) or 0
+    if grade < 0 then grade = 0 end
 
     local identifier = player.identifier
 
@@ -339,11 +351,11 @@ function Sun.Jobs:setLegalJob(source, jobName, grade)
         Sun.Jobs.Data[identifier] = { legal = {}, illegal = {} }
     end
 
-    Sun.Jobs.Data[identifier].legal = { name = jobName or "unemployed", grade = tonumber(grade) or 0 }
+    Sun.Jobs.Data[identifier].legal = { name = jobName, grade = grade }
 
     MySQL.update(
         'UPDATE users SET job = ?, job_grade = ? WHERE identifier = ?',
-        { jobName or "unemployed", tonumber(grade) or 0, identifier }
+        { jobName, grade, identifier }
     )
 
     return true
@@ -353,17 +365,22 @@ function Sun.Jobs:setIllegalJob(source, jobName, grade)
     local player = Sun.Players[source]
     if not player then return false end
 
+    if jobName ~= nil and not self:exists(jobName) then return false end
+
+    grade = tonumber(grade) or 0
+    if grade < 0 then grade = 0 end
+
     local identifier = player.identifier
 
     if not Sun.Jobs.Data[identifier] then
         Sun.Jobs.Data[identifier] = { legal = {}, illegal = {} }
     end
 
-    Sun.Jobs.Data[identifier].illegal = { name = jobName, grade = tonumber(grade) or 0 }
+    Sun.Jobs.Data[identifier].illegal = { name = jobName, grade = grade }
 
     MySQL.update(
         'UPDATE users SET job_illegal = ?, job_illegal_grade = ? WHERE identifier = ?',
-        { jobName, tonumber(grade) or 0, identifier }
+        { jobName, grade, identifier }
     )
 
     return true
