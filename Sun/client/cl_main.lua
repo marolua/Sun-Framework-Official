@@ -24,13 +24,12 @@ function Sun:reconnecting()
     CreateThread(function()
         Wait(1000)
         for attempt = 1, 5 do
-            self:connexion()
-            Wait(500)
-            self:reloadRequest()
-            Wait(500 * attempt) -- backoff: 500ms, 1s, 1.5s, 2s, 2.5s
             if getIdentifier() then
+                self:reloadRequest()
                 return
             end
+            self:connexion()
+            Wait(500 + 500 * attempt) -- backoff: 1s, 1.5s, 2s, 2.5s, 3s
         end
     end)
 end
