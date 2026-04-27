@@ -133,21 +133,12 @@ CreateThread(function()
             local ped = PlayerPedId()
             local hash = GetCurrentPedWeapon(ped, true)
             if hash and hash ~= 0 and hash ~= unarmed then
-                local found = false
                 for i = 1, #Sun.playerData.loadout do
                     if Sun.playerData.loadout[i].weapon == hash then
                         Sun.playerData.loadout[i].ammo = GetAmmoInPedWeapon(ped, hash)
                         Sun.playerData.loadout[i].tint = GetPedWeaponTintIndex(ped, hash)
-                        found = true
                         break
                     end
-                end
-                if not found then
-                    Sun.playerData.loadout[#Sun.playerData.loadout + 1] = {
-                        weapon = hash,
-                        ammo = GetAmmoInPedWeapon(ped, hash),
-                        tint = GetPedWeaponTintIndex(ped, hash),
-                    }
                 end
             end
         end
@@ -169,16 +160,57 @@ RegisterNetEvent("Sun:Loadout:Restore", function(weapons)
     end
 
     Sun.playerData.loadout = weapons
+    RemoveAllPedWeapons(PlayerPedId(), true)
     loadOut(weapons)
+end)
+
+RegisterNetEvent("Sun:Loadout:GiveWeapon", function(item)
+    if type(item) ~= "table" then return end
+    local hash = tonumber(item.weapon)
+    if not hash or hash <= 0 then return end
+
+    local ammo = tonumber(item.ammo) or 0
+    local tint = tonumber(item.tint) or 0
+
+    local found = false
+    for i = 1, #Sun.playerData.loadout do
+        if Sun.playerData.loadout[i].weapon == hash then
+            Sun.playerData.loadout[i].ammo = ammo
+            Sun.playerData.loadout[i].tint = tint
+            found = true
+            break
+        end
+    end
+    if not found then
+        Sun.playerData.loadout[#Sun.playerData.loadout + 1] = {
+            weapon = hash, ammo = ammo, tint = tint
+        }
+    end
+
+    local ped = PlayerPedId()
+    GiveWeaponToPed(ped, hash, ammo, false, false)
+    SetPedWeaponTintIndex(ped, hash, tint)
+end)
+
+RegisterNetEvent("Sun:Loadout:RemoveWeapon", function(weapon)
+    weapon = tonumber(weapon)
+    if not weapon then return end
+
+    local loadout = Sun.playerData.loadout
+    for i = 1, #loadout do
+        if loadout[i].weapon == weapon then
+            loadout[i] = loadout[#loadout]
+            loadout[#loadout] = nil
+            break
+        end
+    end
+
+    RemoveWeaponFromPed(PlayerPedId(), weapon)
 end)
 
 AddEventHandler("onResourceStop", function(resource)
     if resource ~= GetCurrentResourceName() then return end
     syncLoadout()
-end)
-
-AddEventHandler("Sun:Loadout:Restore", function(weapons)
-    loadOut(weapons)
 end)
 
 RegisterNetEvent("Sun:PlayerData:Update", function(key, value)
