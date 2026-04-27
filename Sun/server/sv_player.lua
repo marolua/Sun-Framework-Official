@@ -569,21 +569,15 @@ end
 
 function PlayerMethods:setJob(jobName, grade)
     local result = Sun.Jobs:setLegalJob(self.source, jobName, grade)
-    TriggerClientEvent("Sun:PlayerData:Update", self.source, "job", {
-        name = jobName or "unemployed",
-        grade = grade or 0,
-        type = "legal",
-    })
+    if not result then return false end
+    Sun.Jobs:sync(self.source, self.identifier)
     return result
 end
 
 function PlayerMethods:setIllegalJob(jobName, grade)
     local result = Sun.Jobs:setIllegalJob(self.source, jobName, grade)
-    TriggerClientEvent("Sun:PlayerData:Update", self.source, "job", {
-        name = jobName or nil,
-        grade = grade or 0,
-        type = "illegal",
-    })
+    if not result then return false end
+    Sun.Jobs:sync(self.source, self.identifier)
     return result
 end
 
