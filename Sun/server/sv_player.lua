@@ -549,14 +549,13 @@ end
 
 function PlayerMethods:setMoney(accountType, amount)
     local result = Sun.Money:setMoney(self.source, accountType, amount)
+    if not result then return false end
     local moneyData = Sun.Money.Data[self.identifier] or {}
-    local updatedMoney = {
+    TriggerClientEvent("Sun:PlayerData:Update", self.source, "money", {
         cash = tonumber(moneyData.cash) or 0,
         bank = tonumber(moneyData.bank) or 0,
         black = tonumber(moneyData.black) or 0,
-    }
-    updatedMoney[accountType] = tonumber(amount) or 0
-    TriggerClientEvent("Sun:PlayerData:Update", self.source, "money", updatedMoney)
+    })
     return result
 end
 
