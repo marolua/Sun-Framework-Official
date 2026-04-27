@@ -689,11 +689,22 @@ function PlayerMethods:kick(reason)
     DropPlayer(self.source, type(reason) == "string" and reason or "Kicked by admin")
 end
 
-function PlayerMethods:ban(reason, bannedBy)
+function PlayerMethods:ban(reason, bannedBy, duration)
     local banReason = type(reason) == "string" and reason or "Banned"
+    local banBy = type(bannedBy) == "string" and bannedBy or "Server"
+
+    local expire = nil
+    duration = tonumber(duration)
+    if duration and duration > 0 then
+        expire = os.time() + duration
+    end
+
+    Sun.Money:saveMoney(self.identifier)
+    Sun.Weapons:save(self.identifier)
+
     MySQL.insert(
-        'INSERT INTO sun_bans (identifier, reason, banned_by) VALUES (?, ?, ?)',
-        { self.identifier, banReason, type(bannedBy) == "string" and bannedBy or "Server" }
+        'INSERT INTO sun_bans (identifier, reason, banned_by, expire) VALUES (?, ?, ?, ?)',
+        { self.identifier, banReason, banBy, expire }
     )
     DropPlayer(self.source, "Banned: " .. banReason)
 end
@@ -704,9 +715,46 @@ end
 
 function PlayerMethods:setLoadout(weapons)
     if type(weapons) ~= "table" then return false end
-    Sun.Weapons.Data[self.identifier] = weapons
-    TriggerClientEvent("Sun:Loadout:Restore", self.source, weapons)
+
+    local sanitized = {}
+    for i = 1, #weapons do
+        local item = weapons[i]
+        if type(item) == "table" then
+            local hash = tonumber(item.weapon)
+            if hash and hash > 0 then
+                sanitized[#sanitized + 1] = {
+                    weapon = hash,
+                    ammo = Sun.Weapons:sanitizeAmmo(item.ammo),
+                    tint = Sun.Weapons:sanitizeTint(item.tint),
+                }
+            end
+        end
+    end
+
+    Sun.Weapons.Data[self.identifier] = sanitized
+    TriggerClientEvent("Sun:Loadout:Restore", self.source, sanitized)
     return true
+end
+
+function PlayerMethods:giveWeapon(weapon, ammo, tint)
+    if not Sun.Weapons:add(self.identifier, weapon, ammo, tint) then return false end
+    TriggerClientEvent("Sun:Loadout:GiveWeapon", self.source, {
+        weapon = tonumber(weapon),
+        ammo = Sun.Weapons:sanitizeAmmo(ammo),
+        tint = Sun.Weapons:sanitizeTint(tint),
+    })
+    return true
+end
+
+function PlayerMethods:removeWeapon(weapon)
+    if not Sun.Weapons:remove(self.identifier, weapon) then return false end
+    TriggerClientEvent("Sun:Loadout:RemoveWeapon", self.source, tonumber(weapon))
+    return true
+end
+
+function PlayerMethods:hasWeapon(weapon)
+    local found = Sun.Weapons:has(self.identifier, weapon)
+    return found
 end
 
 local function createPlayer(source)
