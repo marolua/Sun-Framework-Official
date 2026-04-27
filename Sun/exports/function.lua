@@ -98,12 +98,32 @@ exports("KickPlayer", function(source, reason)
     if player then player:kick(reason) end
 end)
 
-exports("BanPlayer", function(source, reason, bannedBy)
+exports("BanPlayer", function(source, reason, bannedBy, duration)
     local player = Sun and Sun:getPlayer(source) or nil
-    if player then player:ban(reason, bannedBy) end
+    if player then player:ban(reason, bannedBy, duration) end
 end)
 
 exports("GetPlayerLoadout", function(source)
     local player = Sun and Sun:getPlayer(source) or nil
     return player and player:getLoadout() or {}
+end)
+
+exports("SetPlayerLoadout", function(source, weapons)
+    local player = Sun and Sun:getPlayer(source) or nil
+    return player and player:setLoadout(weapons) or false
+end)
+
+exports("GiveWeapon", function(source, weapon, ammo, tint)
+    local player = Sun and Sun:getPlayer(source) or nil
+    return player and player:giveWeapon(weapon, ammo, tint) or false
+end)
+
+exports("RemoveWeapon", function(source, weapon)
+    local player = Sun and Sun:getPlayer(source) or nil
+    return player and player:removeWeapon(weapon) or false
+end)
+
+exports("HasWeapon", function(source, weapon)
+    local player = Sun and Sun:getPlayer(source) or nil
+    return player and player:hasWeapon(weapon) or false
 end)
