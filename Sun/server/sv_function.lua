@@ -156,14 +156,22 @@ Sun.Callbacks:register("Sun:SetJob", function(source, callback, job)
         callback({success = false})
         return
     end
+    if type(job) ~= "table" or type(job.name) ~= "string" then
+        callback({success = false})
+        return
+    end
     local player = Sun:getPlayer(source)
-    local success = player and player:setJob(job.name, job.grade)
+    local success = player and player:setJob(job.name, job.grade) or false
     callback({success = success})
 end)
 
 Sun.Callbacks:register("Sun:SetGroup", function(source, callback, group)
     local callerGroup = Sun:getGroup(source) or "user"
     if not (Sun.Config.adminGroups and Sun.Config.adminGroups[callerGroup] == true) then
+        callback({success = false})
+        return
+    end
+    if type(group) ~= "string" or group == "" or #group > 50 or not group:match("^[%w_%-]+$") then
         callback({success = false})
         return
     end
