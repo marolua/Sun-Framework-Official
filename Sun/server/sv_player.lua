@@ -776,14 +776,9 @@ end
 
 function Sun:getPlayerFromIdentifier(identifier)
     if type(identifier) ~= "string" or identifier == "" then return nil end
-
-    for _, player in pairs(self.Players) do
-        if player.identifier == identifier then
-            return player
-        end
-    end
-
-    return nil
+    local src = self:getSourceFromIdentifier(identifier)
+    if not src then return nil end
+    return self.Players[src]
 end
 
 function Sun:getPlayers()
