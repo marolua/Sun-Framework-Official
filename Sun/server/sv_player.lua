@@ -873,9 +873,17 @@ AddEventHandler("playerDropped", function()
     Sun.Players[src] = nil
 end)
 
+Sun.permsRateLimit = Sun.permsRateLimit or {}
+
 RegisterNetEvent("Sun:Perms:Request", function()
     local src = source
     if type(src) ~= "number" or src < 1 then return end
+
+    local now = GetGameTimer()
+    if Sun.permsRateLimit[src] and (now - Sun.permsRateLimit[src]) < 2000 then
+        return
+    end
+    Sun.permsRateLimit[src] = now
 
     local player = Sun:getPlayer(src)
     if not player then return end
