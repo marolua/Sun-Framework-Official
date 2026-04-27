@@ -47,17 +47,45 @@ RegisterCommand("givemoney", function(source, args)
     print("[Sun] Give money valid")
 end, false)
 
-RegisterNetEvent("Sun:SpawnVehicle", function(model)
-    local source = source
+local validVehicleTypes = {
+    automobile = true, bike = true, boat = true, heli = true,
+    plane = true, submarine = true, trailer = true, train = true, blimp = true
+}
 
-    if not isAdmin(source) then
-        print("[Sun] " .. GetPlayerName(source) .. " tried to spawn a vehicle without permission")
+local spawnRateLimit = {}
+
+RegisterNetEvent("Sun:SpawnVehicle", function(model, vtype)
+    local src = source
+
+    if not isAdmin(src) then
+        print(("[Sun] %s tried to spawn a vehicle without permission"):format(GetPlayerName(src) or "unknown"))
         return
     end
 
-    if type(model) ~= "string" or #model > 64 then
+    if type(model) ~= "string" or #model == 0 or #model > 64 or not model:match("^[%w_%-]+$") then
         return
     end
 
-    TriggerClientEvent("Sun:SpawnVehicle:Response", source, model)
+    local now = GetGameTimer()
+    if spawnRateLimit[src] and (now - spawnRateLimit[src]) < 1000 then return end
+    spawnRateLimit[src] = now
+
+    vtype = (type(vtype) == "string" and validVehicleTypes[vtype]) and vtype or "automobile"
+
+    local ped = GetPlayerPed(src)
+    if not ped or ped == 0 then return end
+
+    local coords = GetEntityCoords(ped)
+    local heading = GetEntityHeading(ped)
+    local hash = joaat(model)
+
+    local vehicle = CreateVehicleServerSetter(hash, vtype, coords.x, coords.y, coords.z + 0.5, heading)
+    if not vehicle or vehicle == 0 then return end
+
+    local netId = NetworkGetNetworkIdFromEntity(vehicle)
+    TriggerClientEvent("Sun:SpawnVehicle:Response", src, netId)
+end)
+
+AddEventHandler("playerDropped", function()
+    spawnRateLimit[source] = nil
 end)

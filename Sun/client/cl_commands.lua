@@ -7,12 +7,13 @@ end
 function Sun:initializeCommands()
     RegisterCommand("car", function(k, args)
         local model = args and args[1] and tostring(args[1]):lower() or ""
+        local vtype = args and args[2] and tostring(args[2]):lower() or nil
 
         if model == "" then
             return
         end
 
-        TriggerServerEvent("Sun:SpawnVehicle", model)
+        TriggerServerEvent("Sun:SpawnVehicle", model, vtype)
     end, false)
 
     RegisterCommand("tp", function(k, args)
