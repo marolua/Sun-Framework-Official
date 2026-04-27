@@ -64,31 +64,24 @@ function Sun:initializeCommands()
     end, false)
 end
 
-RegisterNetEvent("Sun:SpawnVehicle:Response", function(model)
-    local modelHash = GetHashKey(model)
-
-    if not IsModelInCdimage(modelHash) or not IsModelAVehicle(modelHash) then
-        return
-    end
+RegisterNetEvent("Sun:SpawnVehicle:Response", function(netId)
+    netId = tonumber(netId)
+    if not netId or netId == 0 then return end
 
     Citizen.CreateThread(function()
-        RequestModel(modelHash)
-        while not HasModelLoaded(modelHash) do
-            Wait(0)
+        local timeout = GetGameTimer() + 5000
+        while not NetworkDoesEntityExistWithNetworkId(netId) and GetGameTimer() < timeout do
+            Wait(50)
         end
 
-        local player = PlayerPedId()
-        local playerCoord = GetEntityCoords(player)
-        local playerCoordHeading = GetEntityHeading(player)
-        local playerCoordForwardVector = GetEntityForwardVector(player)
+        if not NetworkDoesEntityExistWithNetworkId(netId) then return end
 
-        local vehicle = CreateVehicle(modelHash, playerCoord.x + playerCoordForwardVector.x * 3.0, playerCoord.y + playerCoordForwardVector.y * 3.0, playerCoord.z + 0.5, playerCoordHeading, true, false)
+        local vehicle = NetworkGetEntityFromNetworkId(netId)
+        if not vehicle or vehicle == 0 then return end
 
         SetVehicleOnGroundProperly(vehicle)
-        SetEntityAsMissionEntity(vehicle, true, true)
         SetVehicleEngineOn(vehicle, true, true, false)
-        TaskWarpPedIntoVehicle(player, vehicle, -1)
-        SetModelAsNoLongerNeeded(modelHash)
+        TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
     end)
 end)
 
