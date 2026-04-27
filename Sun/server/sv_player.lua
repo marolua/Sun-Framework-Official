@@ -160,6 +160,16 @@ function Sun.Money:setMoney(source, accountType, amount)
 
     local identifier = player.identifier
     amount = tonumber(amount) or 0
+    if amount < 0 then amount = 0 end
+
+    local maxValues = {
+        cash = Sun.Config.money.defaultMoneyLiquidMax,
+        bank = Sun.Config.money.defaultMoneyBankMax,
+        black = Sun.Config.money.defaultMoneyBlackMax,
+    }
+
+    local cap = maxValues[accountType]
+    if cap and amount > cap then amount = cap end
 
     local mData = Sun.Money.Data[identifier]
     if not mData then
