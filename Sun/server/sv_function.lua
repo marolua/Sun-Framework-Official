@@ -196,6 +196,32 @@ function Sun:useItem(source, itemName)
     return true
 end
 
+local useItemRateLimit = {}
+
+RegisterNetEvent("Sun:UseItem", function(itemName)
+    local src = source
+    if type(src) ~= "number" or src < 1 then return end
+    if type(itemName) ~= "string" or itemName == "" or #itemName > 50 then return end
+
+    local now = GetGameTimer()
+    useItemRateLimit[src] = useItemRateLimit[src] or {}
+    if useItemRateLimit[src][itemName] and (now - useItemRateLimit[src][itemName]) < 500 then
+        return
+    end
+    useItemRateLimit[src][itemName] = now
+
+    local player = Sun:getPlayer(src)
+    if not player then return end
+
+    if not player:hasItem(itemName, 1) then return end
+
+    Sun:useItem(src, itemName)
+end)
+
+AddEventHandler("playerDropped", function()
+    useItemRateLimit[source] = nil
+end)
+
 AddEventHandler("playerDropped", function(reason)
     local src = source
 
