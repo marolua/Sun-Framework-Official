@@ -844,11 +844,17 @@ AddEventHandler("Sun:LoadingCharacter", function(source)
         meta = Sun.PlayerMeta[identifier] or {},
         loadout = Sun.Weapons.Data[identifier] or {},
     })
+
+    TriggerClientEvent("Sun:OnPlayerLoaded", source)
+    TriggerEvent("Sun:OnPlayerLoaded", source)
 end)
 
 AddEventHandler("playerDropped", function()
     local src = source
     local player = Sun.Players[src]
+
+    if Sun.permsRateLimit then Sun.permsRateLimit[src] = nil end
+    if Sun.reloadRateLimit then Sun.reloadRateLimit[src] = nil end
 
     if not player then return end
 
