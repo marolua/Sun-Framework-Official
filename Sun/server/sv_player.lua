@@ -224,6 +224,83 @@ function Sun.Weapons:save(identifier)
     MySQL.update('UPDATE users SET loadout = ? WHERE identifier = ?', { encoded, identifier })
 end
 
+function Sun.Weapons:sanitizeAmmo(ammo)
+    ammo = tonumber(ammo) or 0
+    if ammo < 0 then return 0 end
+    if ammo > 9999 then return 9999 end
+    return ammo
+end
+
+function Sun.Weapons:sanitizeTint(tint)
+    tint = tonumber(tint) or 0
+    if tint < 0 then return 0 end
+    if tint > 8 then return 8 end
+    return tint
+end
+
+function Sun.Weapons:has(identifier, weaponHash)
+    local data = self.Data[identifier]
+    if not data then return false, nil end
+    weaponHash = tonumber(weaponHash)
+    if not weaponHash then return false, nil end
+    for i = 1, #data do
+        if data[i].weapon == weaponHash then
+            return true, i
+        end
+    end
+    return false, nil
+end
+
+function Sun.Weapons:add(identifier, weapon, ammo, tint)
+    weapon = tonumber(weapon)
+    if not weapon or weapon <= 0 then return false end
+
+    if not self.Data[identifier] then self.Data[identifier] = {} end
+
+    ammo = self:sanitizeAmmo(ammo)
+    tint = self:sanitizeTint(tint)
+
+    local found, idx = self:has(identifier, weapon)
+    if found then
+        self.Data[identifier][idx].ammo = ammo
+        self.Data[identifier][idx].tint = tint
+    else
+        self.Data[identifier][#self.Data[identifier] + 1] = {
+            weapon = weapon, ammo = ammo, tint = tint
+        }
+    end
+    return true
+end
+
+function Sun.Weapons:remove(identifier, weapon)
+    weapon = tonumber(weapon)
+    if not weapon then return false end
+    local data = self.Data[identifier]
+    if not data then return false end
+    for i = 1, #data do
+        if data[i].weapon == weapon then
+            data[i] = data[#data]
+            data[#data] = nil
+            return true
+        end
+    end
+    return false
+end
+
+function Sun.Weapons:updateAmmo(identifier, weapon, ammo)
+    local found, idx = self:has(identifier, weapon)
+    if not found then return false end
+    self.Data[identifier][idx].ammo = self:sanitizeAmmo(ammo)
+    return true
+end
+
+function Sun.Weapons:updateTint(identifier, weapon, tint)
+    local found, idx = self:has(identifier, weapon)
+    if not found then return false end
+    self.Data[identifier][idx].tint = self:sanitizeTint(tint)
+    return true
+end
+
 function Sun.Jobs:sync(source, identifier)
     local data = Sun.Jobs.Data[identifier] or {}
     local legal = data.legal or {}
